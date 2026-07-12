@@ -1,0 +1,12 @@
+# Local files that must never end up in this public repo
+*.db
+*.sqlite
+*.sqlite3
+.env
+.env.*
+*.pem
+*.key
+*.p8
+.DS_Store
+desktop.ini
+Thumbs.db

@@ -11,55 +11,68 @@
     h1 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
     .subtitle { color: #a1a1aa; font-size: 14px; margin-bottom: 28px; }
     .code-box { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 15px; background: #0f1117; border: 1px solid #2a2b35; border-radius: 10px; padding: 16px 20px; margin: 0 auto 20px; word-break: break-all; line-height: 1.5; user-select: all; cursor: text; min-height: 52px; }
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; font-size: 14px; font-weight: 500; border: none; border-radius: 10px; cursor: pointer; transition: opacity 0.15s; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; font-size: 14px; font-weight: 500; border: none; border-radius: 10px; cursor: pointer; transition: opacity 0.15s; text-decoration: none; }
     .btn:hover { opacity: 0.85; }
     .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-secondary { background: #2a2b35; color: #e4e4e7; }
+    .actions { display: none; gap: 12px; justify-content: center; flex-wrap: wrap; }
     .btn-copied { background: #22c55e; color: #fff; }
     .hint { color: #71717a; font-size: 13px; margin-top: 20px; }
     .error h1 { color: #ef4444; }
-    .success-icon { font-size: 40px; margin-bottom: 12px; }
+    .success h1 { color: #22c55e; }
   </style>
 </head>
 <body>
   <div class="card" id="card">
-    <div class="success-icon" id="icon"></div>
     <h1 id="title">Loading...</h1>
     <p class="subtitle" id="subtitle"></p>
     <div class="code-box" id="code"></div>
-    <button class="btn btn-primary" id="copy-btn" style="display:none" onclick="copyCode()">Copy Code</button>
+    <div class="actions" id="actions">
+      <a class="btn btn-primary" id="open-btn">Open Koinkat</a>
+      <button class="btn btn-secondary" id="copy-btn" onclick="copyCode()">Copy Code</button>
+    </div>
     <p class="hint" id="hint"></p>
   </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
+    const state = params.get('state');
     const error = params.get('error');
     const errorDesc = params.get('error_description');
 
-    const iconEl = document.getElementById('icon');
     const titleEl = document.getElementById('title');
     const subtitleEl = document.getElementById('subtitle');
     const codeEl = document.getElementById('code');
     const copyBtn = document.getElementById('copy-btn');
+    const actionsEl = document.getElementById('actions');
+    const openEl = document.getElementById('open-btn');
     const hintEl = document.getElementById('hint');
     const cardEl = document.getElementById('card');
 
     if (error) {
       cardEl.classList.add('error');
-      iconEl.textContent = '\u2717';
       titleEl.textContent = 'Authorization Failed';
       subtitleEl.textContent = errorDesc || error;
       codeEl.style.display = 'none';
       hintEl.textContent = 'Close this tab and try again in Koinkat.';
     } else if (code) {
-      iconEl.textContent = '\u2713';
+      cardEl.classList.add('success');
       titleEl.textContent = 'Bank Authorization Successful';
-      subtitleEl.textContent = 'Copy this code and paste it into Koinkat:';
+      subtitleEl.textContent = 'Handing the code to Koinkat. If the app does not open, copy the code and paste it into Koinkat:';
       codeEl.textContent = code;
-      copyBtn.style.display = 'inline-flex';
-      hintEl.textContent = 'You can close this tab after copying.';
+      actionsEl.style.display = 'flex';
+      hintEl.textContent = 'You can close this tab once Koinkat has the code.';
+
+      // Hand the code (and the OAuth state) to the desktop app through its
+      // registered koinkat:// URL scheme. This is a local OS handoff, not a
+      // network request: nothing leaves this browser tab. Manual copy stays
+      // available for browsers that block the automatic attempt.
+      let target = 'koinkat://auth-callback?code=' + encodeURIComponent(code);
+      if (state) target += '&state=' + encodeURIComponent(state);
+      openEl.href = target;
+      try { window.location.href = target; } catch (e) { /* manual path remains */ }
     } else {
-      iconEl.textContent = '?';
       titleEl.textContent = 'No Authorization Code';
       subtitleEl.textContent = 'No code or error was received.';
       codeEl.style.display = 'none';
@@ -68,14 +81,22 @@
 
     function copyCode() {
       const text = codeEl.textContent;
+      function copyFailed() {
+        hintEl.textContent = 'Automatic copy failed. Click the code above to select it, then copy it manually.';
+      }
+      if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        copyFailed();
+        return;
+      }
       navigator.clipboard.writeText(text).then(function() {
         copyBtn.textContent = 'Copied!';
         copyBtn.className = 'btn btn-copied';
+        hintEl.textContent = 'You can close this tab once Koinkat has the code.';
         setTimeout(function() {
           copyBtn.textContent = 'Copy Code';
-          copyBtn.className = 'btn btn-primary';
+          copyBtn.className = 'btn btn-secondary';
         }, 2000);
-      });
+      }).catch(copyFailed);
     }
   </script>
 </body>
