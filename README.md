@@ -36,7 +36,18 @@ instead.
 
 ## Self-hosting
 
-You do not have to trust this deployment. Copy index.html to any HTTPS host
-you control (a GitHub Pages site on your own account works), register that URL
-as the redirect URL on your Enable Banking application, and enter the same URL
-in Koinkat under Settings > Bank credentials.
+You do not have to trust this deployment. Copying and modifying index.html
+for your own hosting is expressly permitted (MIT License, see below). Copy it
+to any HTTPS host you control (a GitHub Pages site on your own account works),
+register that URL as the redirect URL on your Enable Banking application, and
+enter the same URL in Koinkat under Settings > Bank credentials.
+
+## License
+
+This repository is licensed under the MIT License - see [LICENSE](LICENSE).
+The full notice is also embedded as a comment at the top of index.html, so a
+verbatim copy of the file carries its own license with it.
+
+The Koinkat desktop app is a separate work licensed under GPL-3.0-or-later.
+This page is deliberately more permissive so that self-hosting stays
+frictionless.
