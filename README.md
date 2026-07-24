@@ -24,9 +24,11 @@ instead.
 - The whole site is one static file: [index.html](index.html). No build step,
   no dependencies, no frameworks.
 - It makes zero network requests. No analytics, no external fonts or scripts,
-  no images. Nothing is loaded from anywhere and nothing is sent anywhere:
-  the authorization code never leaves your machine. The koinkat:// handoff is
-  a URL scheme launch handled by your operating system, not a network call.
+  no images. The page itself sends nothing anywhere. Like any page load, the
+  request URL - including the authorization code - reaches the hosting server;
+  there the code is useless without the private key that exists only on your
+  machine, and it is single-use and short-lived. The koinkat:// handoff is a
+  URL scheme launch handled by your operating system, not a network call.
 - Koinkat validates the state parameter it receives against the value it
   generated when the flow started, and rejects missing or mismatched states
   (CSRF protection).
